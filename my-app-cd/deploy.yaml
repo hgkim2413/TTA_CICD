@@ -1,9 +1,40 @@
-apiVersion: v1
-data:
-  .dockerconfigjson: eyJh...In19fQ==
-kind: Secret
+---
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  creationTimestamp: null
-  name: ghcr-secret
-  namespace: seungbaeji
-type: kubernetes.io/dockerconfigjson
+  name: fastapi-deployment
+  namespace: hgkim2413
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+      - name: fastapi
+        image: ghcr.io/hgkim2413/my-app:latest  # GHCR 이미지 경로
+        ports:
+        - containerPort: 8000
+      imagePullSecrets:
+      - name: ghcr-secret  # 생성한 ImagePullSecret 참조
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-service
+  namespace: hgkim2413
+spec:
+  selector:
+    app: fastapi
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 30017  # NodePort 직접 지정 (예시)
+  type: NodePort
+
